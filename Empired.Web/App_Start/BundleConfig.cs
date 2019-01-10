@@ -36,7 +36,7 @@ namespace Empired.Web.App_Start
             //    ));
 
             bundles.Add(new ScriptBundle("~/bundles/vendors").Include(
-                    "~/Scripts/Vendors/jquery.js"
+                    "~/Scripts/jquery-3.3.1.js"
                 ));
 
             //bundles.Add(new ScriptBundle("~/bundles/spa").Include(
