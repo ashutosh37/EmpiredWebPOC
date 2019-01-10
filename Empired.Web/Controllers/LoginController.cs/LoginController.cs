@@ -14,6 +14,8 @@ namespace Empired.Web.Controllers
 {
     public class LoginController : Controller
     {
+
+
         public ActionResult Index()
         {
             // _userContext.IsAuthenticated()
