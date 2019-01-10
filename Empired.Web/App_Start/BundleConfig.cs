@@ -35,6 +35,10 @@ namespace Empired.Web.App_Start
             //    "~/Scripts/Vendors/loading-bar.js"
             //    ));
 
+            bundles.Add(new ScriptBundle("~/bundles/vendors").Include(
+                    "~/Scripts/Vendors/jquery.js"
+                ));
+
             //bundles.Add(new ScriptBundle("~/bundles/spa").Include(
             //    "~/Scripts/spa/modules/common.core.js",
             //    "~/Scripts/spa/modules/common.ui.js",
