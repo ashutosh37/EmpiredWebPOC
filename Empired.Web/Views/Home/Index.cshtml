@@ -57,14 +57,22 @@
             document.getElementById("uploadProgressBar").innerHTML = process + '%';
         }
 
-        function uploadBlob() {
+            function uploadBlob() {
+
+
+                //Checkk the sas in session storage 
+                //if not exists get it from the webapi 
+                
+
             // Show progress bar
             displayProcess(0);
             document.getElementById("uploadProgressBarContainer").classList.remove('hidden');
-
-            var blobUri = 'https://' + 'empiredtstblob' + '.blob.core.windows.net';
-            var blobService = AzureStorage.Blob.createBlobServiceWithSas(blobUri, 'sv=2018-03-28&ss=b&srt=sco&sp=rwdlac&se=2019-01-11T07:09:42Z&st=2019-01-10T23:09:42Z&spr=https&sig=HAvG99Qfxy%2BdDafLktk9LlzeN6i%2FIebB%2FSTfeQ0uA5E%3D');
-
+            var storageAccount = 'empiredtstblob'; 
+            var blobUri = 'https://' + storageAccount + '.blob.core.windows.net';
+            var containerName = 'container-empiredblob';
+            var sasToken = 'sv=2018-03-28&ss=b&srt=sco&sp=rwdlac&se=2019-01-11T07:09:42Z&st=2019-01-10T23:09:42Z&spr=https&sig=HAvG99Qfxy%2BdDafLktk9LlzeN6i%2FIebB%2FSTfeQ0uA5E%3D';
+            var blobService = AzureStorage.Blob.createBlobServiceWithSas(blobUri, sasToken);
+            
             // If one file has been selected in the HTML file input element
             var file = $('#FileInput').get(0).files[0];
             console.log(file);
@@ -72,20 +80,22 @@
             blobService.singleBlobPutThresholdInBytes = customBlockSize;
 
             var finishedOrError = false;
-            var speedSummary = blobService.createBlockBlobFromBrowserFile('container-empiredblob', file.name, file, { blockSize: customBlockSize }, function (error, result, response) {
+            var speedSummary = blobService.createBlockBlobFromBrowserFile(containerName, file.name, file, { blockSize: customBlockSize }, function (error, result, response) {
                 finishedOrError = true;
                 if (error) {
                     alert('Error');
                 } else {
                     displayProcess(100);
-                    blobService.listBlobsSegmented('container-empiredblob', null, (error, results) => {
+                    blobService.listBlobsSegmented(containerName, null, (error, results) => {
                         if (error) {
                             // Handle list blobs error
                         } else {
                             $("#displaybloblist").empty();
                             var list = $("#displaybloblist");
                             results.entries.forEach(blob => {
-                                list.append("<li>" + blob.name + "</li>");
+
+                                var link = blobService.getUrl(containerName, blob.name, sasToken);
+                                list.append("<li><a href='" + link + "'>"+blob.name+"</a></li>");
                             });
                         }
                     });

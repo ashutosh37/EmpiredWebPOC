@@ -284,6 +284,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\Home\HomeApiController.cs" />
     <Compile Include="Controllers\Home\HomeController.cs" />
+    <Compile Include="Controllers\Home\SASToken.cs" />
     <Compile Include="Controllers\LoginController.cs\LoginController.cs" />
     <Compile Include="Controllers\Products\ProductsController.cs" />
     <Compile Include="Global.asax.cs">

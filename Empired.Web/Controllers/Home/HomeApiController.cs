@@ -28,6 +28,19 @@ namespace Empired.Web.Controllers.Home
         }
 
         [HttpGet]
+        [Route("getsas")]
+        public SASToken GetSasToken()
+        {
+            //Get User Container from data base , if not exixts then generate new one and save in DB
+            //Check if conrtainer exists in Bl;ob Storage, if not generate it
+            //get container SAS
+            //return container name along with sas 
+
+            
+
+            return null;
+        }
+        [HttpGet]
         [Route("authenticate")]
         public User GetUser(string userid)
         {
