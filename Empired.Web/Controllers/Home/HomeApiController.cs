@@ -13,6 +13,8 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
+using Numero3.EntityFramework.Interfaces;
+using Empired.Web.Models;
 
 namespace Empired.Web.Controllers.Home
 {
@@ -21,82 +23,118 @@ namespace Empired.Web.Controllers.Home
     public class HomeApiController : ApiController
     {
         private readonly IUserContext _userContext;
+        private readonly IDbContextScopeFactory _factory;
 
-        public HomeApiController(IUserContext userContext) 
+        public HomeApiController(IUserContext userContext , IDbContextScopeFactory factory) 
         {
             _userContext = userContext;
+            _factory = factory;
         }
 
         [HttpGet]
         [Route("getsas")]
         public SASToken GetSasToken()
         {
-            //Get User Container from data base , if not exixts then generate new one and save in DB
-            //Check if conrtainer exists in Bl;ob Storage, if not generate it
-            //get container SAS
-            //return container name along with sas 
+            var sastoken = GetToken();
+
+            return sastoken; 
 
             
-
-            return null;
         }
-        [HttpGet]
-        [Route("authenticate")]
-        public User GetUser(string userid)
+        public SASToken GetToken()
         {
-            var user = new User
+            var userid = _userContext.UserModel.Id;
+            string sharedAccessPolicyName = "userpolicy" + DateTime.Now.Ticks.ToString();
+            CloudBlobContainer cloudcontainer;
+            SASToken token;
+            using (var scope = _factory.Create(DbContextScopeOption.ForceCreateNew))
             {
-                Name = "Ashutosh"
-            };
+                var ctx = scope.DbContexts.Get<EmpiredWebContext>();
 
-            return user;
-        }
+                var container = ctx.tbl_User_BlobContainer.SingleOrDefault(x=> x.UserId == userid);
 
-        [HttpPost]
-        [Route("uploadfile")]
-        public string UploadFile([FromBody] UserFile userFile) 
-        {
-            //null check values 
+                var containername = container != null ? container.CloudContainerName : null;
+
+                if (containername == null)
+                {
+                    try
+                    {
+                        // create new guid and save in the database
+                        containername = GetNewContainerId(userid);
+
+                        ctx.tbl_User_BlobContainer.Add(new tbl_User_BlobContainer
+                        {
+                            ContainerId = Guid.NewGuid(),
+                            UserId = userid,
+                            CloudContainerName = containername
+                        });
+
+                        ctx.SaveChanges();
+
+                    }
+                    catch (Exception e)
+                    {
+
+                    }
+
+                }
+                cloudcontainer = GetUserContainer(containername);
+                CreateSharedAccessPolicy(cloudcontainer, sharedAccessPolicyName);
+
+                token = new SASToken();
+                token.SasToken = GetContainerSasUri(cloudcontainer, sharedAccessPolicyName);
+                token.Container = containername;
+                token.StorageAccount = Common.CreateStorageAccountFromConnectionString().BlobEndpoint.AbsoluteUri.ToString();
 
 
-            string fileName = userFile.Name;
-            var fileData = userFile.File;
-            Guid? userID = _userContext.UserId;
-            var result = "";
-            //check if user has a BlobContainerIndentifier in database table by user id
-
-
-            //if user BlobContainerIndentifier does not exist in DB. then create salt and save in the database
-            string salt = Convert.ToBase64String(GetSalt(16));
-            string blobContainerIndentifier = userID.ToString();// + "-" + salt;
-                       
-            //access the blob storage container
-            try {
-                UploadFileToBlobStorageAsync(blobContainerIndentifier, userFile).Wait();
-                //if student container does not exist then create a new container with userID inside blob
-                result = "Successfully added the resources to Azure storage";
-
-                //upload the file to blob storage. 
-
-                //return response
-                //return Ok();
-            } catch (Exception e){
-                result = "Error while added the resources to storage: " + e.Message;
-                // log exception
-               // var message = e.Message;
-                //return response
-                //return InternalServerError();
             }
 
-            return result;
+
+            return token;
+
+
         }
 
-        /// <summary>
-        /// Basic operations to work with page blobs
-        /// </summary>
-        /// <returns>A Task object.</returns>
-        private async Task UploadFileToBlobStorageAsync(string containerName, UserFile userFile) {
-            string PageBlobName = userFile.Name;
+        private void CreateSharedAccessPolicy(CloudBlobContainer container, string policyName)
+        {
+            // Create a new shared access policy and define its constraints.
+            // The access policy provides create, write, read, list, and delete permissions.
+            SharedAccessBlobPolicy sharedPolicy = new SharedAccessBlobPolicy()
+            {
+                // When the start time for the SAS is omitted, the start time is assumed to be the time when the storage service receives the request. 
+                // Omitting the start time for a SAS that is effective immediately helps to avoid clock skew.
+                SharedAccessExpiryTime = DateTime.UtcNow.AddHours(24),
+                Permissions = SharedAccessBlobPermissions.Read | SharedAccessBlobPermissions.List | SharedAccessBlobPermissions.Add | 
+                    SharedAccessBlobPermissions.Write | SharedAccessBlobPermissions.Create | SharedAccessBlobPermissions.Delete
+            };
+
+            // Get the container's existing permissions.
+            BlobContainerPermissions permissions = container.GetPermissions();
+            permissions.SharedAccessPolicies.Clear();
+            // Add the new policy to the container's permissions, and set the container's permissions.
+            var sharingPolicyOnContainer = permissions.SharedAccessPolicies.FirstOrDefault(x => x.Key == policyName);
+            permissions.SharedAccessPolicies.Add(policyName, sharedPolicy);
+            container.SetPermissions(permissions);
+        }
+
+        private string GetNewContainerId(Guid userid)
+        {
+            string salt = Convert.ToString(GetSalt(10));
+            string blobContainerIndentifier = userid.ToString() + salt;// + "-" + salt;
+
+            return blobContainerIndentifier;
+        }
+        private int GetSalt(int maxSaltLength)
+        {
+            //var salt = new byte[maxSaltLength];
+            var random = new RNGCryptoServiceProvider();
+            return random.GetHashCode();
+
+            
+        }
+
+        private CloudBlobContainer GetUserContainer(string containerName)
+        {
             //string containerName = ContainerPrefix + Guid.NewGuid();
 
             // Retrieve storage account information from connection string
@@ -113,64 +151,51 @@ namespace Empired.Web.Controllers.Home
             if (!container.Exists())
             {
                 container.CreateIfNotExists();
-                //await container.CreateIfNotExistsAsync();
-                //container.CreateIfNotExistsAsync().Wait();
+
+
+
+
             }
 
-            //var result = await container.CreateIfNotExistsAsync();
-
-            // Create a page blob in the newly created container.  
-            Console.WriteLine("2. Creating Page Blob");
-            CloudPageBlob pageBlob = container.GetPageBlobReference(PageBlobName);
-            if (!pageBlob.Exists())
-            {
-                pageBlob.Create(512 * 2 /*size*/);
-                //await pageBlob.CreateAsync(512 * 2 /*size*/);
-                //pageBlob.CreateAsync(512 * 2 /*size*/).Wait(); // size needs to be multiple of 512 bytes
-            }
-
-            // Write to a page blob 
-            Console.WriteLine("2. Write to a Page Blob");
-            byte[] samplePagedata = userFile.File;//new byte[512];
-            Random random = new Random();
-            random.NextBytes(samplePagedata);
-
-            pageBlob.UploadFromByteArray(samplePagedata, 0, samplePagedata.Length);
-            //await pageBlob.UploadFromByteArrayAsync(samplePagedata, 0, samplePagedata.Length);
-            //pageBlob.UploadFromByteArrayAsync(samplePagedata, 0, samplePagedata.Length).Wait();
-
-            // List all blobs in this container. Because a container can contain a large number of blobs the results 
-            // are returned in segments with a maximum of 5000 blobs per segment. You can define a smaller maximum segment size
-            // using the maxResults parameter on ListBlobsSegmentedAsync.
-            //Console.WriteLine("3. List Blobs in Container");
-            BlobContinuationToken token = null;
-            do
-            {
-                BlobResultSegment resultSegment = container.ListBlobsSegmented(token);
-                //BlobResultSegment resultSegment = await container.ListBlobsSegmentedAsync(token);
-                token = resultSegment.ContinuationToken;
-                foreach (IListBlobItem blob in resultSegment.Results)
-                {
-                    // Blob type will be CloudBlockBlob, CloudPageBlob or CloudBlobDirectory
-                    Console.WriteLine("{0} (type: {1}", blob.Uri, blob.GetType());
-                }
-            }
-            while (token != null);
-
-            // Read from a page blob
-            Console.WriteLine("4. Read from a Page Blob");
-            int bytesRead = pageBlob.DownloadRangeToByteArray(samplePagedata, 0, 0, samplePagedata.Count());
+            return container;
         }
 
-        private byte[] GetSalt(int maxSaltLength)
+        private string GetContainerSasUri(CloudBlobContainer container, string storedPolicyName = null)
         {
-            var salt = new byte[maxSaltLength];
-            using (var random = new RNGCryptoServiceProvider())
+            string sasContainerToken;
+
+            // If no stored policy is specified, create a new access policy and define its constraints.
+            if (storedPolicyName == null)
             {
-                random.GetNonZeroBytes(salt);
+                // Note that the SharedAccessBlobPolicy class is used both to define the parameters of an ad-hoc SAS, and 
+                // to construct a shared access policy that is saved to the container's shared access policies. 
+                SharedAccessBlobPolicy adHocPolicy = new SharedAccessBlobPolicy()
+                {
+                    // When the start time for the SAS is omitted, the start time is assumed to be the time when the storage service receives the request. 
+                    // Omitting the start time for a SAS that is effective immediately helps to avoid clock skew.
+                    SharedAccessExpiryTime = DateTime.UtcNow.AddHours(24),
+                    Permissions = SharedAccessBlobPermissions.Write | SharedAccessBlobPermissions.List
+                };
+
+                // Generate the shared access signature on the container, setting the constraints directly on the signature.
+                sasContainerToken = container.GetSharedAccessSignature(adHocPolicy, null);
+
+                Console.WriteLine("SAS for blob container (ad hoc): {0}", sasContainerToken);
+                Console.WriteLine();
+            }
+            else
+            {
+                // Generate the shared access signature on the container. In this case, all of the constraints for the
+                // shared access signature are specified on the stored access policy, which is provided by name.
+                // It is also possible to specify some constraints on an ad-hoc SAS and others on the stored access policy.
+                sasContainerToken = container.GetSharedAccessSignature(null, storedPolicyName);
+                sasContainerToken = sasContainerToken.Substring(1);
+                Console.WriteLine("SAS for blob container (stored access policy): {0}", sasContainerToken);
+                Console.WriteLine();
             }
 
-            return salt;
+            // Return the URI string for the container, including the SAS token.
+            return  sasContainerToken;
         }
     }
 
@@ -207,16 +232,5 @@ namespace Empired.Web.Controllers.Home
         }
     }
 
-    public class User
-    {
-        public string Name { get; set; }
-    }
-
-    public class UserFile 
-    {
-        public string Name;
-
-        //public string Image;
-        public byte[] File;
-    }
+    
 }

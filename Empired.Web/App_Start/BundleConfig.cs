@@ -36,7 +36,7 @@ namespace Empired.Web.App_Start
             //    ));
 
             bundles.Add(new ScriptBundle("~/bundles/vendors").Include(
-                    "~/Scripts/jquery-3.3.1.js"
+                    "~/Scripts/app/public/bundle.js"
                 ));
 
             //bundles.Add(new ScriptBundle("~/bundles/spa").Include(
@@ -69,14 +69,8 @@ namespace Empired.Web.App_Start
             //    ));
 
             bundles.Add(new StyleBundle("~/Content/css").Include(
-                "~/content/css/site.css",
-                "~/content/css/bootstrap.css",
-                "~/content/css/bootstrap-theme.css",
-                 "~/content/css/font-awesome.css",
-                "~/content/css/morris.css",
-                "~/content/css/toastr.css",
-                "~/content/css/jquery.fancybox.css",
-                "~/content/css/loading-bar.css"));
+                "~/Scripts/app/public/style.css"
+                ));
 
             BundleTable.EnableOptimizations = false;
         }

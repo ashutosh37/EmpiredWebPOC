@@ -5,74 +5,134 @@
 
 @section Content{
 
-    <h1>Welcome to student portal @ViewBag.UserName</h1>
 
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form asp-controller="Home" asp-action="UploadSmallFile" enctype="multipart/form-data" id="BlobUploadForm" method="post" class="form-label-left" role="form">
-                <div class="modal-body">
-                    <div class="form-group">
-                        <div class="input-group">
-                            <label class="input-group-btn">
-                                <span class="btn btn-primary">
-                                    Browse… <input type="file" style="display: none;" name="file" id="FileInput">
-                                </span>
-                            </label>
-                            <input type="text" class="form-control" readonly="" id="BrowseInput">
+    <div class="container-fluid">
+        <div class="col-md-5 p-lg-5 mx-auto my-5" id="reactapp">
+           
+        </div>
+
+    </div>
+    
+    
+
+    @*<div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-controller="Home" asp-action="UploadSmallFile" enctype="multipart/form-data" id="BlobUploadForm" method="post" class="form-label-left" role="form">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <label class="input-group-btn">
+                                    <span class="btn btn-primary">
+                                        Browse… <input type="file" style="display: none;" name="file" id="FileInput">
+                                    </span>
+                                </label>
+                                <input type="text" class="form-control" readonly="" id="BrowseInput">
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="input-group">
-                            <button type="button" value="Upload to Blob" class="btn btn-default" id="UploadBlob" onclick="uploadBlob()">Upload to Blob</button>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <button type="button" value="Upload to Blob" class="btn btn-default" id="UploadBlob" onclick="uploadBlob()">Upload to Blob</button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group hidden" id="uploadProgressBarContainer">
-                        Uploading...
-                        <div class="progress">
-                            <div class="progress-bar" role="progressbar" id="uploadProgressBar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
-                                0%
+                        <div class="form-group hidden" id="uploadProgressBarContainer">
+                            Uploading...
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" id="uploadProgressBar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                                    0%
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div id="row col-md-12">
-                    <ul id="displaybloblist">
 
-                    </ul>
-                </div>
-            </form>
+                </form>
+
+            </div>
         </div>
-    </div>
-    }
-    @section Scripts {
-        <script type="text/javascript">
+        <div id="row col-md-12">
+            <ul id="displaybloblist"></ul>
+        </div>
+        <div id="uploadComponent">
+            {{ message }}
+        </div>*@
+}
+@section Scripts {
+
+    @*<script type="text/javascript">
         $(document).on('change', ':file', function () {
             var input = $(this)
             var label = $('#BrowseInput').val(input.val().replace(/\\/g, '/').replace(/.*\//, ''));
         });
-        </script>
-        <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            var sasToken = sessionStorage.getItem("sasToken");
+            var containerName = sessionStorage.getItem("containerName");
+            var blobUri = sessionStorage.getItem("blobUri");
+            if (!sasToken) {
+                $.ajax({
+                    url: "/api/home/getsas",
+                    type: "GET",
+                    dataType: 'json',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                }).done(function (results) {
+                    sessionStorage.setItem("sasToken", results.SasToken);
+                    sessionStorage.setItem("containerName", results.Container);
+                    sessionStorage.setItem("blobUri", results.StorageAccount);
+                    getBlobList(results.StorageAccount, results.Container, results.SasToken);
+                })
+            }
+            else {
+                getBlobList(blobUri, containerName, sasToken);
+            }
+
+            function getBlobList(blobUri, containerName, sasToken) {
+                var blobService = AzureStorage.Blob.createBlobServiceWithSas(blobUri, sasToken);
+                blobService.listBlobsSegmented(containerName, null, (error, results) => {
+                    if (error) {
+                        // Handle list blobs error
+                    } else {
+                        $("#displaybloblist").empty();
+                        var list = $("#displaybloblist");
+                        results.entries.forEach(blob => {
+
+                            var link = blobService.getUrl(containerName, blob.name, sasToken);
+                            list.append("<li><a href='" + link + "'>" + blob.name + "</a><button>delete</button></li>");
+                        });
+
+                        list.on("click", "button", function (e) {
+                            e.preventDefault();
+                            var blobitem = $(this).parent();
+                            var blobName = blobitem.find("a")[0].innerText;
+                            blobService.deleteBlobIfExists(containerName, blobName, (error, result) => {
+                                if (error) {
+                                    // Handle delete blob error
+                                } else {
+
+                                    console.log('Blob deleted successfully');
+                                }
+                            });
+                            blobitem.remove();
+
+                        });
+                    }
+                });
+            }
+
+        })
+    </script>
+    <script type="text/javascript">
         function displayProcess(process) {
             document.getElementById("uploadProgressBar").style.width = process + '%';
             document.getElementById("uploadProgressBar").innerHTML = process + '%';
         }
 
-            function uploadBlob() {
 
 
-                //Checkk the sas in session storage 
-                //if not exists get it from the webapi 
-                
-
-            // Show progress bar
-            displayProcess(0);
-            document.getElementById("uploadProgressBarContainer").classList.remove('hidden');
-            var storageAccount = 'empiredtstblob'; 
-            var blobUri = 'https://' + storageAccount + '.blob.core.windows.net';
-            var containerName = 'container-empiredblob';
-            var sasToken = 'sv=2018-03-28&ss=b&srt=sco&sp=rwdlac&se=2019-01-11T07:09:42Z&st=2019-01-10T23:09:42Z&spr=https&sig=HAvG99Qfxy%2BdDafLktk9LlzeN6i%2FIebB%2FSTfeQ0uA5E%3D';
+        function upload(blobUri, sasToken, containerName) {
             var blobService = AzureStorage.Blob.createBlobServiceWithSas(blobUri, sasToken);
-            
+
             // If one file has been selected in the HTML file input element
             var file = $('#FileInput').get(0).files[0];
             console.log(file);
@@ -95,13 +155,14 @@
                             results.entries.forEach(blob => {
 
                                 var link = blobService.getUrl(containerName, blob.name, sasToken);
-                                list.append("<li><a href='" + link + "'>"+blob.name+"</a></li>");
+                                list.append("<li><a href='" + link + "'>" + blob.name + "</a></li>");
                             });
                         }
                     });
                 }
-            });
 
+
+            });
             function refreshProgress() {
                 setTimeout(function () {
                     if (!finishedOrError) {
@@ -111,11 +172,48 @@
                     }
                 }, 200);
             }
-
             refreshProgress();
         }
+        function uploadBlob() {
 
-        </script>
-    }
+            var sasToken = sessionStorage.getItem("sasToken");
+            var containerName = sessionStorage.getItem("containerName");
+            var blobUri = sessionStorage.getItem("blobUri");
+            if (!sasToken) {
+                $.ajax({
+                    url: "/api/home/getsas",
+                    type: "GET",
+                    dataType: 'json',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                }).done(function (results) {
+
+                    displayProcess(0);
+                    sessionStorage.setItem("sasToken", results.SasToken);
+                    sessionStorage.setItem("containerName", results.Container);
+                    sessionStorage.setItem("blobUri", results.StorageAccount);
+                    document.getElementById("uploadProgressBarContainer").classList.remove('hidden');
+                    //var storageAccount = 'empiredtstblob';
+                    var blobUri = results.StorageAccount;
+                    var containerName = results.Container;
+                    var sasToken = results.SasToken;//'sv=2018-03-28&ss=b&srt=sco&sp=rwdlac&se=2019-01-11T07:09:42Z&st=2019-01-10T23:09:42Z&spr=https&sig=HAvG99Qfxy%2BdDafLktk9LlzeN6i%2FIebB%2FSTfeQ0uA5E%3D';
+                    upload(blobUri, sasToken, containerName)
+
+                });
+            }
+            else {
+                displayProcess(0);
+                document.getElementById("uploadProgressBarContainer").classList.remove('hidden');
+                upload(blobUri, sasToken, containerName);
+            }
+        }
+
+                        // Show progress bar
+
+
+
+    </script>*@
+}
 
 

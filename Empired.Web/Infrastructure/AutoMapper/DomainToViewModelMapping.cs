@@ -17,9 +17,7 @@ namespace Empired.Web.Mappings
 
         protected override void Configure()
         {
-            Mapper.CreateMap<Product, ProductViewModel>()
-                .ForMember(vm => vm.Name, map => map.MapFrom(m => m.Name))
-                .ForMember(vm => vm.ProductNumber, map => map.MapFrom(m => m.ProductNumber));
+
 
             Mapper.CreateMap<User, UserModel>()
                 .ForMember(vm => vm.Id, map => map.MapFrom(m => m.UserId))

@@ -6,7 +6,7 @@
                 Hello, @User.Identity.Name!
             </li>
             <li>
-                @Html.ActionLink("Sign out", "SignOut", "Login", routeValues: null, htmlAttributes: new { id = "logoutLink" })
+                @Html.ActionLink("Sign out", "SignOut", "Login", new { id = "logoutLink" }, new { @class = "nav-link", data_icon = "gear" })
             </li>
         </ul>
     </text>
@@ -17,4 +17,6 @@ else
         <li>@Html.ActionLink("Sign in", "SignIn", "Login", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
     </ul>
 }
+
+
 

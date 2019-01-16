@@ -25,16 +25,7 @@ namespace Empired.Web.Controllers
         public ActionResult Index()
         {
             var model = new List<ProductViewModel>();
-            using (var scope = _factory.Create())
-            {
-                var ctx = scope.DbContexts.Get<EmpiredWebContext>();
 
-                var products = ctx.Products.Take(5).ToList();
-
-                model = Mapper.Map<IEnumerable<Product>, IEnumerable<ProductViewModel>>(products).ToList();
-
-
-            }
             return View(model);
         }
     }

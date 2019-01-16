@@ -27,23 +27,8 @@ namespace Empired.Web.Models
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<BuildVersion> BuildVersions { get; set; }
-        public virtual DbSet<ErrorLog> ErrorLogs { get; set; }
-        public virtual DbSet<Address> Addresses { get; set; }
-        public virtual DbSet<Customer> Customers { get; set; }
-        public virtual DbSet<CustomerAddress> CustomerAddresses { get; set; }
-        public virtual DbSet<Product> Products { get; set; }
-        public virtual DbSet<ProductCategory> ProductCategories { get; set; }
-        public virtual DbSet<ProductDescription> ProductDescriptions { get; set; }
-        public virtual DbSet<ProductModel> ProductModels { get; set; }
-        public virtual DbSet<ProductModelProductDescription> ProductModelProductDescriptions { get; set; }
-        public virtual DbSet<SalesOrderDetail> SalesOrderDetails { get; set; }
-        public virtual DbSet<SalesOrderHeader> SalesOrderHeaders { get; set; }
-        public virtual DbSet<vGetAllCategory> vGetAllCategories { get; set; }
-        public virtual DbSet<vProductAndDescription> vProductAndDescriptions { get; set; }
-        public virtual DbSet<vProductModelCatalogDescription> vProductModelCatalogDescriptions { get; set; }
-        public virtual DbSet<database_firewall_rules> database_firewall_rules { get; set; }
         public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<tbl_User_BlobContainer> tbl_User_BlobContainer { get; set; }
     
         [DbFunction("EmpiredWebContext", "ufnGetAllCategories")]
         public virtual IQueryable<ufnGetAllCategories_Result> ufnGetAllCategories()

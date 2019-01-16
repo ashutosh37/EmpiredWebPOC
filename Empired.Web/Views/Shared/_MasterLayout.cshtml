@@ -13,30 +13,119 @@
 
     <script src="~/Scripts/jquery-3.3.1.js"></script>
     <script src="~/Scripts/azure-storage.blob.js"></script>
-    @*@Scripts.Render("~/bundles/vendors")*@
-    @Styles.Render("~/Content/css")
+    <link href="https://getbootstrap.com/docs/4.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <link href="~/Scripts/app/public/style.css" />
+    @*@Styles.Render("~/Content/css")*@
+
 </head>
 <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                @Html.ActionLink("Career Portal", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                    <li>@Html.ActionLink("Product", "Index", "Products")</li>
-                </ul>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        @Html.ActionLink("Career Portal", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    @Html.ActionLink("Home", "Index", "Home")
+                </li>
+                <li class="nav-item">
+                    @Html.ActionLink("Product", "Index", "Products")
+                </li>
+                @*<li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Dropdown
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                        </div>
+                    </li>*@
+                @*<li class="nav-item">
+                        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+                    </li>*@
+            </ul>
+            <div class="form-inline my-2 my-lg-0">
                 @Html.Partial("_LoginPartial")
             </div>
         </div>
-    </div>
+    </nav>
+    @*<div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    @Html.ActionLink("Career Portal", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li>@Html.ActionLink("Home", "Index", "Home")</li>
+                        <li>@Html.ActionLink("Product", "Index", "Products")</li>
+                    </ul>
+                    @Html.Partial("_LoginPartial")
+                </div>
+            </div>
+        </div>*@
     @RenderSection("Content", false)
+
+    <footer class="container py-5">
+        <div class="row">
+            <div class="col-12 col-md">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="d-block mb-2" focusable="false" role="img"><title>Product</title><circle cx="12" cy="12" r="10"></circle><line x1="14.31" y1="8" x2="20.05" y2="17.94"></line><line x1="9.69" y1="8" x2="21.17" y2="8"></line><line x1="7.38" y1="12" x2="13.12" y2="2.06"></line><line x1="9.69" y1="16" x2="3.95" y2="6.06"></line><line x1="14.31" y1="16" x2="2.83" y2="16"></line><line x1="16.62" y1="12" x2="10.88" y2="21.94"></line></svg>
+                <small class="d-block mb-3 text-muted">© 2017-2018</small>
+            </div>
+            <div class="col-md-6">
+                <h5>Features</h5>
+                <ul class="list-unstyled text-small">
+                    <li><a class="text-muted" href="https://getbootstrap.com/docs/4.2/examples/product/#">Cool stuff</a></li>
+                    <li><a class="text-muted" href="https://getbootstrap.com/docs/4.2/examples/product/#">Random feature</a></li>
+                    <li><a class="text-muted" href="https://getbootstrap.com/docs/4.2/examples/product/#">Team feature</a></li>
+                    <li><a class="text-muted" href="https://getbootstrap.com/docs/4.2/examples/product/#">Stuff for developers</a></li>
+                    <li><a class="text-muted" href="https://getbootstrap.com/docs/4.2/examples/product/#">Another one</a></li>
+                    <li><a class="text-muted" href="https://getbootstrap.com/docs/4.2/examples/product/#">Last time</a></li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h5>Resources</h5>
+                <ul class="list-unstyled text-small">
+                    <li><a class="text-muted" href="https://getbootstrap.com/docs/4.2/examples/product/#">Resource</a></li>
+                    <li><a class="text-muted" href="https://getbootstrap.com/docs/4.2/examples/product/#">Resource name</a></li>
+                    <li><a class="text-muted" href="https://getbootstrap.com/docs/4.2/examples/product/#">Another resource</a></li>
+                    <li><a class="text-muted" href="https://getbootstrap.com/docs/4.2/examples/product/#">Final resource</a></li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h5>Resources</h5>
+                <ul class="list-unstyled text-small">
+                    <li><a class="text-muted" href="https://getbootstrap.com/docs/4.2/examples/product/#">Business</a></li>
+                    <li><a class="text-muted" href="https://getbootstrap.com/docs/4.2/examples/product/#">Education</a></li>
+                    <li><a class="text-muted" href="https://getbootstrap.com/docs/4.2/examples/product/#">Government</a></li>
+                    <li><a class="text-muted" href="https://getbootstrap.com/docs/4.2/examples/product/#">Gaming</a></li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h5>About</h5>
+                <ul class="list-unstyled text-small">
+                    <li><a class="text-muted" href="https://getbootstrap.com/docs/4.2/examples/product/#">Team</a></li>
+                    <li><a class="text-muted" href="https://getbootstrap.com/docs/4.2/examples/product/#">Locations</a></li>
+                    <li><a class="text-muted" href="https://getbootstrap.com/docs/4.2/examples/product/#">Privacy</a></li>
+                    <li><a class="text-muted" href="https://getbootstrap.com/docs/4.2/examples/product/#">Terms</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+
+    <script src="https://getbootstrap.com/docs/4.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-zDnhMsjVZfS3hiP7oCBRmfjkQC4fzxVxFhBx8Hkz2aZX8gEvA/jsP3eXRCvzTofP" crossorigin="anonymous"></script>
+    @*@Scripts.Render("~/bundles/vendors")*@
+    <script src="~/Scripts/app/public/bundle.js"></script>
     @RenderSection("Scripts", false)
 </body>
 </html>

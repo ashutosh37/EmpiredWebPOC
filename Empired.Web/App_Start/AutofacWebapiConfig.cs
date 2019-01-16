@@ -16,6 +16,7 @@ using Empired.Common;
 using System;
 using Empired.Web.Infrastructure.Security;
 using System.Runtime.Caching;
+using Empired.Web.Controllers.Home;
 
 namespace Empired.Web.App_Start
 {
@@ -60,7 +61,6 @@ namespace Empired.Web.App_Start
                .SingleInstance();
                 builder.RegisterType<UserModelProvider>().AsSelf();
                 //builder.RegisterType<HomeController>().InstancePerRequest();
-
                 builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
                 //builder.RegisterWebApiFilterProvider(config);
                 //builder.RegisterType<EmpiredWebContext>().InstancePerRequest();
